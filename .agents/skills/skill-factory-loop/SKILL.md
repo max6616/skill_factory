@@ -1,6 +1,6 @@
 ---
 name: skill-factory-loop
-description: 根据已确认 skill contract 自动接管 Codex skill 的创建、测试、修复、验证和交付。Use when the user wants the agent development infrastructure to build a skill from a contract, use Codex $skill-creator, run role-isolated clean evals, fix failures, and iterate until the skill satisfies contract acceptance criteria.
+description: Build and verify a Codex skill from a confirmed contract. Use to run a role-isolated loop with $skill-creator, skill_developer, clean_skill_executor, skill_verifier, clean evals, evidence gates, fixes, and final delivery.
 ---
 
 # Skill Factory Loop
@@ -11,7 +11,15 @@ description: 根据已确认 skill contract 自动接管 Codex skill 的创建�
 
 必须存在已确认 contract。若没有 contract，先使用 `contract-maker` 生成 contract。
 
-必须有用户对 subagents/custom agents 的显式授权。若当前请求没有明确要求使用 `skill_developer`、`clean_skill_executor`、`skill_verifier` 或等价的子代理隔离流程，先要求用户确认后再进入闭环。
+必须有用户对 subagents/custom agents 的显式授权。
+
+以下任一情况视为本轮已授权：
+- 用户显式调用 `$skill-factory-loop`；
+- 用户说“请使用 skill-factory-loop 接管”；
+- 用户在 contract 中写明允许使用 `skill_developer`、`clean_skill_executor`、`skill_verifier`；
+- 用户在启动 prompt 中写明“允许本轮使用 subagents/custom agents 完成开发、执行、验证闭环”。
+
+若没有上述授权，不进入闭环；只输出需要用户确认的一句话。
 
 ## 核心原则
 
@@ -24,6 +32,15 @@ description: 根据已确认 skill contract 自动接管 Codex skill 的创建�
 7. 不通过降低 contract、删除 eval、缩小触发范围来制造通过。
 
 ## 基本流程
+
+Baseline 规则：
+
+- 新 skill 的 baseline 是可选项，不作为 MUST 通过条件。
+- 若运行 without_skill baseline，必须采用以下方式之一：
+  1. 在 baseline executor prompt 中明确禁止读取或调用候选 skill，并记录这是 heuristic baseline；
+  2. 临时将候选 skill snapshot 移出 `.agents/skills` 后重启 Codex / 新开会话；
+  3. 使用 custom agent 的 skills.config 禁用目标 skill，如果当前 Codex 环境支持动态配置。
+- 若无法保证 baseline 未使用目标 skill，baseline 标记为 `blocked` 或 `not_run`，不得作为改进证据。
 
 ### 1. Contract readiness check
 

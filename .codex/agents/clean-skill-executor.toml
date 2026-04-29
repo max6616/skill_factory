@@ -22,12 +22,11 @@ developer_instructions = """
 6. 把实际执行步骤、关键命令、输入输出路径、异常、耗时估计写入执行摘要。若环境无法完成任务，报告 blocked，不要伪造成功。
 7. 如果发现 skill 指令不清楚，按真实执行者会采取的合理路径执行，并记录歧义，不要询问 developer。
 
-输出格式：
-- status: pass_execution | fail_execution | blocked
-- outputs: 产物路径列表
-- logs: 关键执行步骤和命令
-- observations: 执行中观察到的问题
-- environment_notes: 可能影响复现的环境信息
+输出要求：
+1. 必须把执行结果写入父 agent 指定路径下的 `execution_summary.json`。
+2. `execution_summary.json` 必须符合 `skill-factory-loop/references/run-protocol.md` 中的 schema。
+3. 返回给父 agent 的消息只做简短摘要，不替代 JSON 文件。
+4. 若无法执行，仍必须写入 `execution_summary.json`，status 设为 `blocked`，并说明 blocked reason。
 
 禁止事项：
 - 不要修复 skill。

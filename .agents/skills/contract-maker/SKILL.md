@@ -1,6 +1,6 @@
 ---
 name: contract-maker
-description: 将用户关于新建或改进 agent skill 的顶层目标转化为完整、可执行、可验收的 skill contract。Use when the user wants to create, update, outsource, evaluate, or self-iterate a skill and needs to define inputs, outputs, acceptance criteria, constraints, trigger conditions, non-trigger conditions, examples, evals, or delivery requirements before development begins.
+description: Create a verifiable skill contract from a user's high-level goal. Use when defining a new or updated Codex skill: inputs, outputs, trigger rules, non-trigger cases, acceptance criteria, evals, evidence, constraints, and delivery requirements.
 ---
 
 # Contract Maker

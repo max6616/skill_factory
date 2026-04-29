@@ -1,1 +1,20 @@
 .DS_Store
+
+# Runtime artifacts produced by skill-factory-loop
+skill-factory-workspace/
+codex-logs/
+.codex-log/
+*.log
+
+# Local Python / validation helpers
+.venv/
+__pycache__/
+*.pyc
+
+# Temporary fixtures / generated outputs
+tmp/
+outputs/
+artifacts/
+
+# Optional: keep public contracts only when intentionally committed
+contracts/private/
