@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Factory Loop"
+  short_description: "Run skill build-test-verify loops"
+  default_prompt: "Use $skill-factory-loop to build and verify a skill from this contract."

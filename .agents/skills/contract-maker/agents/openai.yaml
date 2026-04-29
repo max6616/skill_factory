@@ -1,0 +1,4 @@
+interface:
+  display_name: "Contract Maker"
+  short_description: "Draft verifiable skill contracts"
+  default_prompt: "Use $contract-maker to turn this skill goal into a contract."
