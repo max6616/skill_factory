@@ -1,0 +1,4 @@
+interface:
+  display_name: "Text Normalizer"
+  short_description: "Normalize plain text into a Markdown code block"
+  default_prompt: "Use $text-normalizer to trim text, collapse half-width spaces, and output one Markdown code block."

@@ -154,3 +154,39 @@ should-not-trigger eval：
 
 - <非阻塞性假设>
 - <若假设错误，用户可以后续修订 contract>
+
+## 14. Complex / Subjective Quality Contract
+
+如果该 skill 的目标难以完全量化，必须补充以下内容：
+
+### 14.1 Quality Dimensions
+
+将抽象质量目标拆成 3-8 个可评价维度。
+
+### 14.2 Hard Gates
+
+列出任何情况下都不能违反的客观门槛。
+
+### 14.3 Rubric
+
+为每个质量维度定义 0-4 或 pass/partial/fail 标准。
+
+### 14.4 Evidence Standard
+
+定义什么证据可以支持输出，什么不能作为证据。
+
+### 14.5 Uncertainty Policy
+
+定义证据不足、来源冲突、无法访问材料时必须如何输出。
+
+### 14.6 Seeded Evaluation Strategy
+
+定义如何构造含已知错误或已知目标的 fixture。
+
+### 14.7 Pairwise Baseline Comparison
+
+定义何时使用 baseline comparison，以及比较维度。
+
+### 14.8 Human Review Escape Hatch
+
+定义哪些情况必须标记为需要人工复核，而不是强行自动通过。

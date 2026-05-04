@@ -1,6 +1,6 @@
 ---
 name: contract-maker
-description: Create a verifiable skill contract from a user's high-level goal. Use when defining a new or updated Codex skill: inputs, outputs, trigger rules, non-trigger cases, acceptance criteria, evals, evidence, constraints, and delivery requirements.
+description: "Create a verifiable skill contract from a user's high-level goal. Use when defining a new or updated Codex skill: inputs, outputs, trigger rules, non-trigger cases, acceptance criteria, evals, evidence, constraints, and delivery requirements."
 ---
 
 # Contract Maker
