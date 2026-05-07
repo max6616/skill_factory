@@ -1,215 +1,215 @@
 # Skill Contract: text-normalizer
 
-## 0. Contract 状态
+## 0. Contract Status
 
-状态：已确认  
-版本：v0.1  
-最后更新：2026-04-29  
-用户确认方式：conversation explicit approval
+Status: confirmed  
+Version: v0.1  
+Last updated: 2026-04-29  
+User confirmation method: conversation explicit approval
 
-## 1. Skill 目标
+## 1. Skill Goal
 
-这个 skill 要让 Codex 能够稳定完成：
+This skill should let Codex reliably complete the following task:
 
-将用户直接提供的一段文本转换为规范化文本，并以 Markdown fenced code block 输出。规范化规则包括去除首尾空白、将连续半角空格压缩为一个半角空格、保留中文标点不变；空输入时输出 `EMPTY_INPUT`。
+Convert a text snippet provided directly by the user into normalized text and output it as a Markdown fenced code block. Normalization rules include trimming leading and trailing whitespace, collapsing consecutive half-width spaces into one half-width space, preserving CJK punctuation unchanged, and outputting `EMPTY_INPUT` for empty input.
 
-## 2. 用户可提供内容
+## 2. User-Provided Content
 
-用户可以提供：
+The user may provide:
 
-- 一段直接出现在对话中的文本。
-- 无必需用户资源、文件、账号、外部工具或 API。
+- A text snippet directly in the conversation.
+- No required user resources, files, accounts, external tools, or APIs.
 
-## 3. 输入定义
+## 3. Input Definition
 
-输入类型：
+Input type:
 
-- 文本
+- Text
 
-输入格式：
+Input format:
 
-- 用户在自然语言请求中直接提供的一段文本。
-- 输入可以包含中文、英文、数字、符号、中文标点、半角空格，以及首尾空白字符。
+- A text snippet provided directly by the user in a natural-language request.
+- Input may contain CJK text, English, numbers, symbols, CJK punctuation, half-width spaces, and leading or trailing whitespace characters.
 
-边界情况：
+Edge cases:
 
-- 输入为空字符串，或仅包含空白字符时，视为空输入。
-- 首尾空白应去除。
-- 文本内部连续半角空格应压缩为一个半角空格。
-- 中文标点，例如 `，。！？；：“”‘’、（）《》`，不得被转换、删除或替换。
-- 若输出文本本身包含 triple backticks，必须选择更长的 Markdown fence，保证输出仍是有效代码块。
+- Treat an empty string, or a string containing only whitespace, as empty input.
+- Remove leading and trailing whitespace.
+- Collapse consecutive internal half-width spaces into a single half-width space.
+- CJK punctuation, such as `，。！？；：“”‘’、（）《》`, must not be converted, deleted, or replaced.
+- If the output text itself contains triple backticks, choose a longer Markdown fence so the output remains a valid code block.
 
-## 4. 输出定义
+## 4. Output Definition
 
-必须输出：
+Must output:
 
-- 一个 Markdown fenced code block。
+- One Markdown fenced code block.
 
-输出格式：
+Output format:
 
-- 输出只包含一个 Markdown code block。
-- code block 内是规范化后的文本。
-- 空输入时，code block 内必须是 `EMPTY_INPUT`。
-- code block 不要求指定语言标识。
+- The output contains only one Markdown code block.
+- The code block contains the normalized text.
+- For empty input, the code block content must be `EMPTY_INPUT`.
+- The code block does not need a language identifier.
 
-质量标准：
+Quality standards:
 
-- 输出必须可被 Markdown 渲染器识别为代码块。
-- code block 内不得包含额外解释、前后缀说明或调试信息。
-- 除指定空白规范化外，不改变原文本内容，尤其不改变中文标点。
+- The output must be recognizable as a code block by Markdown renderers.
+- The code block must not contain extra explanations, prefixes, suffixes, or debug information.
+- Except for the specified whitespace normalization, do not change the original text content, especially CJK punctuation.
 
-## 5. 触发条件
+## 5. Trigger Conditions
 
-should-trigger：
+should-trigger:
 
-- 用户要求“规范化这段文本”“normalize this text”“整理空格并输出代码块”等文本规范化任务。
-- 用户直接提供文本，并要求去除首尾空白、压缩连续空格、或以 Markdown 代码块输出规范化结果。
-- 用户显式提到使用 `text-normalizer` skill。
+- The user asks for a text-normalization task, such as "normalize this text", "clean up spacing and output a code block", or equivalent wording.
+- The user directly provides text and asks to trim leading/trailing whitespace, collapse consecutive spaces, or output the normalized result as a Markdown code block.
+- The user explicitly mentions using the `text-normalizer` skill.
 
-## 6. 非触发条件
+## 6. Non-Trigger Conditions
 
-should-not-trigger：
+should-not-trigger:
 
-- 用户要求翻译、改写、润色、摘要、纠错、扩写、分类、提取关键词或语义分析。
-- 用户要求格式化代码、JSON、Markdown 文档、表格或配置文件，而不是普通文本规范化。
-- 用户只是在讨论“文本规范化”概念、算法或实现方式，没有要求处理具体输入文本。
-- 用户要求改变中文标点、统一全角半角、删除标点或做语言风格调整。
+- The user asks for translation, rewriting, polishing, summarization, correction, expansion, classification, keyword extraction, or semantic analysis.
+- The user asks to format code, JSON, Markdown documents, tables, or config files rather than normalize plain text.
+- The user is only discussing the concept, algorithm, or implementation of "text normalization" and is not asking to process concrete input text.
+- The user asks to change CJK punctuation, normalize full-width/half-width characters, delete punctuation, or adjust writing style.
 
-## 7. 验收标准
+## 7. Acceptance Criteria
 
 ### MUST
 
-- 正常输入能按规则规范化。
-- 空输入能输出 `EMPTY_INPUT`。
-- 输出必须是 Markdown fenced code block。
-- code block 内不得包含本次 session 的临时信息、开发过程、路径、时间戳或解释性文字。
-- 不得依赖本次 session 的临时上下文、临时文件、agent 记忆或未写入 skill 的约定。
-- 必须至少包含一个 should-trigger eval。
-- 必须至少包含一个 should-not-trigger eval。
-- 不得改变中文标点。
+- Normal input can be normalized according to the rules.
+- Empty input can output `EMPTY_INPUT`.
+- Output must be a Markdown fenced code block.
+- The code block must not contain temporary information from the current session, development process details, paths, timestamps, or explanatory text.
+- The skill must not rely on temporary context from the current session, temporary files, agent memory, or conventions not written into the skill.
+- There must be at least one should-trigger eval.
+- There must be at least one should-not-trigger eval.
+- CJK punctuation must not be changed.
 
 ### SHOULD
 
-- skill 的 `description` 能清楚说明何时使用和何时不使用。
-- eval 结果应保存 `execution_summary.json` 和 `verifier_verdict.json`。
-- eval 覆盖正常输入、空输入、中文标点保留、Markdown code block 格式。
-- skill 内容应简洁，只包含完成任务所需的程序性知识。
+- The skill `description` clearly explains when to use it and when not to use it.
+- Eval results should save `execution_summary.json` and `verifier_verdict.json`.
+- Evals cover normal input, empty input, CJK punctuation preservation, and Markdown code block format.
+- The skill content should be concise and contain only the procedural knowledge needed to complete the task.
 
 ### COULD
 
-- 支持含有 Markdown fence 字符的输入，并自动使用更长 fence 避免破坏代码块。
-- 提供一个轻量脚本或检查器验证输出是否为单一 Markdown code block。
+- Support input containing Markdown fence characters by automatically using a longer fence to avoid breaking the code block.
+- Provide a lightweight script or checker to verify that the output is a single Markdown code block.
 
-## 8. 方案要求与限制
+## 8. Implementation Requirements And Constraints
 
-必须遵守：
+Must follow:
 
-- 目标 skill 放在 `.agents/skills/text-normalizer/`。
-- contract 保存为 `contracts/text-normalizer.contract.md`。
-- eval 与运行结果放在 `skill-factory-workspace/text-normalizer/`，按 iteration 分层保存。
-- 创建或更新 skill 时优先使用 Codex 内置 `$skill-creator`。
-- 开发、执行、验收必须角色隔离：
-  - `skill_developer` 只负责创建、修改、修复目标 skill。
-  - `skill_executor` 只负责在干净初始条件下执行 eval prompt。
-  - `skill_verifier` 只根据 contract、eval metadata、trace、logs、artifacts 和输出验收。
+- Place the target skill in `.agents/skills/text-normalizer/`.
+- Save the contract as `contracts/text-normalizer.contract.md`.
+- Save evals and run results in `skill-factory-workspace/text-normalizer/`, layered by iteration.
+- Prefer Codex's built-in `$skill-creator` when creating or updating the skill.
+- Development, execution, and verification must be role-isolated:
+  - `skill_developer` only creates, modifies, and fixes the target skill.
+  - `skill_executor` only executes eval prompts from clean initial conditions.
+  - `skill_verifier` verifies only from the contract, eval metadata, trace, logs, artifacts, and outputs.
 
-禁止：
+Forbidden:
 
-- 不得把开发过程、失败日志、临时 debug 结论或修复理由写进目标 skill 的 `SKILL.md`。
-- 不得让 developer 自行判定最终通过。
-- 不得只重跑失败片段来证明修复通过；修改 skill 后必须从干净初始条件重新运行相关 eval。
-- 不得联网、调用外部 API、访问私有资源或依赖用户未提供的文件。
+- Do not write the development process, failure logs, temporary debug conclusions, or fix rationales into the target skill's `SKILL.md`.
+- Do not let the developer decide final pass status.
+- Do not prove a fix by rerunning only the failed fragment; after changing the skill, rerun the relevant eval from clean initial conditions.
+- Do not access the network, call external APIs, access private resources, or depend on files the user did not provide.
 
-自由度：
+Degrees of freedom:
 
-- 高自由度：skill 内部说明的组织方式、eval prompt 的具体措辞。
-- 中自由度：是否增加轻量自动检查脚本。
-- 低自由度：规范化规则、输出 code block 格式、角色隔离、证据要求。
+- High freedom: organization of the skill's internal instructions and exact wording of eval prompts.
+- Medium freedom: whether to add a lightweight automated checking script.
+- Low freedom: normalization rules, output code block format, role isolation, and evidence requirements.
 
-## 9. Eval 设计
+## 9. Eval Design
 
-端到端 eval：
+End-to-end eval:
 
 - id: e2e-001
   prompt: |
-    使用 text-normalizer 规范化下面这段文本：
+    Use text-normalizer to normalize the following text:
 
-        你好，   世界！  这是   一个  test。
+        Hello，   world！  This   is  a   test。
   expected_output: |
     ```
-    你好， 世界！ 这是 一个 test。
+    Hello， world！ This is a test。
     ```
-  input_files: 无
+  input_files: none
 
 - id: e2e-002
   prompt: |
-    使用 text-normalizer 处理下面的输入：
+    Use text-normalizer to process the following input:
 
        
   expected_output: |
     ```
     EMPTY_INPUT
     ```
-  input_files: 无
+  input_files: none
 
-should-trigger eval：
-
-- query: |
-    请把这段文本去掉首尾空白、压缩连续空格，并用 Markdown 代码块输出：
-
-       A   B  C，  你好！   
-  expected_behavior: 应触发 text-normalizer，并输出单一 Markdown code block，内容为 `A B C， 你好！`。
-
-should-not-trigger eval：
+should-trigger eval:
 
 - query: |
-    请把“你好，世界！”翻译成英文。
-  expected_behavior: 不应触发 text-normalizer，因为这是翻译任务，不是文本规范化任务。
+    Trim leading and trailing whitespace, collapse consecutive spaces, and output this text as a Markdown code block:
 
-历史失败样例：
+       A   B  C，  hello！   
+  expected_behavior: Should trigger text-normalizer and output a single Markdown code block containing `A B C， hello！`.
 
-- 无。
+should-not-trigger eval:
 
-## 10. 证据要求
+- query: |
+    Translate 'Hello， world！' into Spanish.
+  expected_behavior: Should not trigger text-normalizer because this is a translation task, not a text-normalization task.
 
-通过时必须提供：
+Historical failure examples:
 
-- 每个 eval 的输入 prompt、执行方式、输出位置。
-- `execution_summary.json`，记录 eval id、触发判定、实际输出、格式检查结果和规范化检查结果。
-- `verifier_verdict.json`，记录 verifier 对每个 MUST/SHOULD 项的 pass/fail/blocked 判定。
-- 执行日志或 trace 摘要。
-- 输出 artifacts 路径。
-- 若有失败，提供可复现失败摘要和下一轮修复 brief。
+- None.
 
-## 11. 安全、隐私与权限
+## 10. Evidence Requirements
 
-敏感数据：
+Passing must provide:
 
-- 默认无。用户输入文本可能包含任意内容，但 skill 不应持久化除 eval artifacts 外的用户文本。
+- Each eval's input prompt, execution method, and output location.
+- `execution_summary.json`, recording eval id, trigger decision, actual output, format check result, and normalization check result.
+- `verifier_verdict.json`, recording the verifier's pass/fail/blocked verdict for each MUST/SHOULD item.
+- Execution logs or trace summary.
+- Output artifact paths.
+- For any failure, a reproducible failure summary and the next repair brief.
 
-外部访问：
+## 11. Safety, Privacy, And Permissions
 
-- 禁止。该 skill 不需要网络、外部 API 或远程服务。
+Sensitive data:
 
-高风险操作：
+- None by default. User input text may contain arbitrary content, but the skill should not persist user text except as eval artifacts.
 
-- 不涉及删除、发布、联网、付费 API、系统配置修改或跨目录写入。
+External access:
 
-## 12. 完成定义
+- Forbidden. This skill does not need network access, external APIs, or remote services.
 
-可以交付当且仅当：
+High-risk operations:
 
-- 所有 MUST 验收项通过。
-- 至少一个 should-trigger eval 和至少一个 should-not-trigger eval 已执行并留存证据。
-- 正常输入、空输入、中文标点保留、Markdown code block 格式均被 eval 覆盖。
-- `execution_summary.json` 和 `verifier_verdict.json` 已保存。
-- verifier 给出 pass verdict。
-- 已知限制已写入最终交付说明。
+- No deletion, publishing, network access, paid APIs, system configuration changes, or cross-directory writes are involved.
 
-## 13. 默认假设
+## 12. Definition Of Done
 
-- “连续空格”指连续半角空格 `U+0020`。
-- “首尾空白”包括常见前后空白字符，例如半角空格、tab 和换行。
-- 不要求进行全角/半角转换。
-- 不要求压缩中文标点周围的空格，除非这些空格属于连续半角空格序列。
-- 输出 code block 可以不带语言标识。
+Deliverable if and only if:
+
+- All MUST acceptance items pass.
+- At least one should-trigger eval and at least one should-not-trigger eval have been executed and evidence has been retained.
+- Normal input, empty input, CJK punctuation preservation, and Markdown code block format are all covered by evals.
+- `execution_summary.json` and `verifier_verdict.json` have been saved.
+- The verifier gives a pass verdict.
+- Known limitations are written into the final delivery note.
+
+## 13. Default Assumptions
+
+- "Consecutive spaces" means consecutive half-width spaces, `U+0020`.
+- "Leading/trailing whitespace" includes common leading and trailing whitespace characters such as half-width spaces, tabs, and newlines.
+- Full-width/half-width conversion is not required.
+- Spaces around CJK punctuation do not need to be compressed unless those spaces are part of a consecutive half-width space sequence.
+- The output code block may omit a language identifier.

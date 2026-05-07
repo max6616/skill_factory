@@ -1,192 +1,192 @@
 # Skill Contract: <skill-name>
 
-## 0. Contract 状态
+## 0. Contract Status
 
-状态：草案 / 已确认  
-版本：v0.1  
-最后更新：<date>  
-用户确认方式：<conversation / file / explicit approval>
+Status: draft / confirmed  
+Version: v0.1  
+Last updated: <date>  
+User confirmation method: <conversation / file / explicit approval>
 
-## 1. Skill 目标
+## 1. Skill Goal
 
-这个 skill 要让 Codex 能够稳定完成：
+This skill should let Codex reliably complete:
 
-<用一到三句话描述目标。>
+<Describe the goal in one to three sentences.>
 
-## 2. 用户可提供内容
+## 2. User-Provided Content
 
-用户可以提供：
+The user can provide:
 
-- <文件、文本、示例、目标资源、偏好、账号、API、环境等>
-- <若没有，写“无必需用户资源”>
+- <files, text, examples, target resources, preferences, accounts, APIs, environment, etc.>
+- <If none, write "no required user resources">
 
-## 3. 输入定义
+## 3. Input Definition
 
-输入类型：
+Input type:
 
-- <文本 / 文件 / 目录 / URL / 数据表 / 代码库 / 其他>
+- <text / file / directory / URL / data table / codebase / other>
 
-输入格式：
+Input format:
 
-- <格式、字段、路径、命名规则>
+- <format, fields, paths, naming rules>
 
-边界情况：
+Edge cases:
 
-- <空输入、缺失字段、多文件、异常格式、歧义输入等>
+- <empty input, missing fields, multiple files, malformed format, ambiguous input, etc.>
 
-## 4. 输出定义
+## 4. Output Definition
 
-必须输出：
+Must output:
 
-- <文件、文本、报告、代码、artifact、结构化 JSON 等>
+- <file, text, report, code, artifact, structured JSON, etc.>
 
-输出格式：
+Output format:
 
-- <格式、字段、命名、保存位置>
+- <format, fields, naming, save location>
 
-质量标准：
+Quality standards:
 
-- <准确性、完整性、一致性、风格、性能、可读性等>
+- <accuracy, completeness, consistency, style, performance, readability, etc.>
 
-## 5. 触发条件
+## 5. Trigger Conditions
 
-should-trigger：
+should-trigger:
 
-- <用户这样说时应使用该 skill>
-- <包括不显式提到 skill 名称但语义上需要该 skill 的情况>
+- <Use this skill when the user says this.>
+- <Include cases where the skill is semantically needed even if the user does not explicitly mention the skill name.>
 
-## 6. 非触发条件
+## 6. Non-Trigger Conditions
 
-should-not-trigger：
+should-not-trigger:
 
-- <相邻但不应触发的任务>
-- <仅包含关键词但实际不需要该 skill 的情况>
+- <Adjacent tasks that should not trigger this skill.>
+- <Cases that contain keywords but do not actually need this skill.>
 
-## 7. 验收标准
+## 7. Acceptance Criteria
 
 ### MUST
 
-- <必须满足，否则不能交付>
-- <必须可由证据验证>
+- <Must be satisfied, otherwise the skill cannot be delivered.>
+- <Must be verifiable by evidence.>
 
 ### SHOULD
 
-- <强烈建议满足，但可在最终说明中解释轻微偏差>
+- <Strongly recommended, but minor deviations may be explained in the final note.>
 
 ### COULD
 
-- <可选增强项>
+- <Optional enhancement.>
 
-## 8. 方案要求与限制
+## 8. Implementation Requirements And Constraints
 
-必须遵守：
+Must follow:
 
-- <必须使用的工具、流程、格式、技术或资源组织方式>
+- <Required tools, workflows, formats, technologies, or resource organization.>
 
-禁止：
+Forbidden:
 
-- <禁止的工具、外部访问、危险操作、不可接受策略>
+- <Forbidden tools, external access, dangerous operations, unacceptable strategies.>
 
-自由度：
+Degrees of freedom:
 
-- 高自由度：<可由 agent 自行判断的部分>
-- 中自由度：<有偏好但可变通的部分>
-- 低自由度：<必须严格执行的脆弱步骤>
+- High freedom: <parts the agent may decide independently>
+- Medium freedom: <parts with preferences but acceptable alternatives>
+- Low freedom: <fragile steps that must be followed strictly>
 
-## 9. Eval 设计
+## 9. Eval Design
 
-端到端 eval：
+End-to-end eval:
 
 - id: e2e-001
-  prompt: <真实用户会说的话>
-  expected_output: <期望结果>
-  input_files: <如有>
+  prompt: <what a real user would say>
+  expected_output: <expected result>
+  input_files: <if any>
 
-should-trigger eval：
+should-trigger eval:
 
 - <query>
 - <query>
 
-should-not-trigger eval：
+should-not-trigger eval:
 
 - <near-miss query>
 - <near-miss query>
 
-历史失败样例：
+Historical failure examples:
 
-- <如有>
+- <if any>
 
-## 10. 证据要求
+## 10. Evidence Requirements
 
-通过时必须提供：
+Passing must provide:
 
-- 执行日志或 trace 摘要；
-- 输出 artifacts 路径；
-- 自动检查或人工 rubric 结果；
-- verifier verdict；
-- 若比较 baseline，提供 with-skill 与 baseline 的差异摘要。
+- execution logs or trace summary;
+- output artifact paths;
+- automated check or human rubric results;
+- verifier verdict;
+- if comparing a baseline, a summary of the difference between with-skill and baseline.
 
-## 11. 安全、隐私与权限
+## 11. Safety, Privacy, And Permissions
 
-敏感数据：
+Sensitive data:
 
-- <有 / 无 / 未知>
+- <yes / no / unknown>
 
-外部访问：
+External access:
 
-- <允许 / 禁止 / 需用户确认>
+- <allowed / forbidden / requires user confirmation>
 
-高风险操作：
+High-risk operations:
 
-- <删除、覆盖、发布、联网、调用付费 API 等>
+- <delete, overwrite, publish, network access, paid API calls, etc.>
 
-## 12. 完成定义
+## 12. Definition Of Done
 
-可以交付当且仅当：
+Deliverable if and only if:
 
-- 所有 MUST 通过；
-- 没有高严重度回归；
-- artifacts 可复现；
-- verifier 给出 pass；
-- 已知限制已写入交付说明。
+- all MUST items pass;
+- there is no high-severity regression;
+- artifacts are reproducible;
+- verifier gives pass;
+- known limitations are written into the delivery note.
 
-## 13. 默认假设
+## 13. Default Assumptions
 
-- <非阻塞性假设>
-- <若假设错误，用户可以后续修订 contract>
+- <non-blocking assumption>
+- <if the assumption is wrong, the user can revise the contract later>
 
 ## 14. Complex / Subjective Quality Contract
 
-如果该 skill 的目标难以完全量化，必须补充以下内容：
+If the skill's goal is difficult to fully quantify, add the following:
 
 ### 14.1 Quality Dimensions
 
-将抽象质量目标拆成 3-8 个可评价维度。
+Break the abstract quality goal into 3-8 assessable dimensions.
 
 ### 14.2 Hard Gates
 
-列出任何情况下都不能违反的客观门槛。
+List objective thresholds that must never be violated.
 
 ### 14.3 Rubric
 
-为每个质量维度定义 0-4 或 pass/partial/fail 标准。
+Define 0-4 or pass/partial/fail standards for each quality dimension.
 
 ### 14.4 Evidence Standard
 
-定义什么证据可以支持输出，什么不能作为证据。
+Define what evidence can support the output and what cannot count as evidence.
 
 ### 14.5 Uncertainty Policy
 
-定义证据不足、来源冲突、无法访问材料时必须如何输出。
+Define what must be output when evidence is insufficient, sources conflict, or materials cannot be accessed.
 
 ### 14.6 Seeded Evaluation Strategy
 
-定义如何构造含已知错误或已知目标的 fixture。
+Define how to construct fixtures with known errors or known targets.
 
 ### 14.7 Pairwise Baseline Comparison
 
-定义何时使用 baseline comparison，以及比较维度。
+Define when to use baseline comparison and which dimensions to compare.
 
 ### 14.8 Human Review Escape Hatch
 
-定义哪些情况必须标记为需要人工复核，而不是强行自动通过。
+Define which cases must be marked for human review rather than forced into automatic pass.

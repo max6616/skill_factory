@@ -5,175 +5,175 @@ description: Build and verify a Codex skill from a confirmed contract. Use to ru
 
 # Skill Factory Loop
 
-你是 skill 开发基础设施的编排者。你的目标不是亲自凭会话上下文“把这次跑通”，而是建立一个可复现的开发—执行—验证闭环，让目标 skill 符合 contract。
+You are the orchestrator for skill-development infrastructure. Your goal is not to personally "make it work in this session" from conversational context, but to build a reproducible development-execution-verification loop so the target skill satisfies the contract.
 
-## 前置条件
+## Preconditions
 
-必须存在已确认 contract。若没有 contract，先使用 `contract-maker` 生成 contract。
+A confirmed contract must exist. If there is no contract, first use `contract-maker` to generate one.
 
-必须有用户对 subagents/custom agents 的显式授权。
+The user must explicitly authorize subagents/custom agents.
 
-以下任一情况视为本轮已授权：
-- 用户显式调用 `$skill-factory-loop`；
-- 用户说“请使用 skill-factory-loop 接管”；
-- 用户在 contract 中写明允许使用 `skill_developer`、`skill_executor`、`skill_verifier`；
-- 用户在启动 prompt 中写明“允许本轮使用 subagents/custom agents 完成开发、执行、验证闭环”。
+Any of the following counts as authorization for this round:
+- The user explicitly invokes `$skill-factory-loop`.
+- The user says "please use skill-factory-loop to take over."
+- The contract states that `skill_developer`, `skill_executor`, and `skill_verifier` may be used.
+- The starting prompt states that subagents/custom agents may be used this round to complete the development, execution, and verification loop.
 
-若没有上述授权，不进入闭环；只输出需要用户确认的一句话。
+If none of the above authorization exists, do not enter the loop; output one sentence asking for user confirmation.
 
-## 核心原则
+## Core Principles
 
-1. 使用 Codex 内置 `$skill-creator` 创建或更新目标 skill。
-2. 将 contract 作为唯一事实来源。
-3. 分离 developer、executor、verifier 身份。
-4. 每轮修改后，从干净初始条件重新执行 eval。
-5. 以 evidence gate 判定通过，而不是以 agent 自述判定通过。
-6. 不把开发过程污染到目标 skill。
-7. 不通过降低 contract、删除 eval、缩小触发范围来制造通过。
+1. Use Codex's built-in `$skill-creator` to create or update the target skill.
+2. Treat the contract as the single source of truth.
+3. Separate developer, executor, and verifier roles.
+4. After each modification round, rerun evals from clean initial conditions.
+5. Judge pass through an evidence gate, not through agent self-report.
+6. Do not pollute the target skill with development process.
+7. Do not manufacture a pass by lowering the contract, deleting evals, or narrowing trigger scope.
 
-## 基本流程
+## Basic Flow
 
-Baseline 规则：
+Baseline rules:
 
-- 新 skill 的 baseline 是可选项，不作为 MUST 通过条件。
-- 若运行 without_skill baseline，必须采用以下方式之一：
-  1. 在 baseline executor prompt 中明确禁止读取或调用候选 skill，并记录这是 heuristic baseline；
-  2. 临时将候选 skill snapshot 移出 `.agents/skills` 后重启 Codex / 新开会话；
-  3. 使用 custom agent 的 skills.config 禁用目标 skill，如果当前 Codex 环境支持动态配置。
-- 若无法保证 baseline 未使用目标 skill，baseline 标记为 `blocked` 或 `not_run`，不得作为改进证据。
+- For a new skill, the baseline is optional and is not a MUST pass condition.
+- If running a without_skill baseline, use one of these methods:
+  1. Explicitly forbid reading or invoking the candidate skill in the baseline executor prompt, and record that this is a heuristic baseline.
+  2. Temporarily move the candidate skill snapshot out of `.agents/skills`, then restart Codex or open a new session.
+  3. Disable the target skill with the custom agent's skills.config if the current Codex environment supports dynamic configuration.
+- If you cannot guarantee that the baseline did not use the target skill, mark the baseline as `blocked` or `not_run`; do not use it as improvement evidence.
 
-### 1. Contract readiness check
+### 1. Contract Readiness Check
 
-读取 contract，确认至少包含：
+Read the contract and confirm that it contains at least:
 
-- skill 目标；
-- 输入定义；
-- 输出定义；
-- 触发条件；
-- 非触发条件；
-- MUST 验收标准；
-- 至少 2 个端到端 eval 或足以生成 eval 的真实示例；
-- 证据要求。
+- skill goal;
+- input definition;
+- output definition;
+- trigger conditions;
+- non-trigger conditions;
+- MUST acceptance criteria;
+- at least two end-to-end evals, or real examples sufficient to generate evals;
+- evidence requirements.
 
-若缺少阻塞信息，返回 contract-maker 阶段。若只是非阻塞缺口，写入默认假设并继续。
+If blocking information is missing, return to the contract-maker phase. If only non-blocking gaps exist, write default assumptions and continue.
 
-### 2. 创建或更新目标 skill
+### 2. Create Or Update The Target Skill
 
-让 `skill_developer` 使用 `$skill-creator` 创建或更新目标 skill。
+Have `skill_developer` use `$skill-creator` to create or update the target skill.
 
-目标 skill 路径：
+Target skill path:
 
 `.agents/skills/<target-skill-name>/`
 
-开发者必须遵守：
+The developer must follow:
 
-- `SKILL.md` 保持简洁；
-- scripts 用于确定性、重复性、易错流程；
-- references 用于详细知识；
-- assets 用于模板与静态资源；
-- description 写清何时触发与边界；
-- 不写入开发日志、测试过程、临时 debug 解释。
+- Keep `SKILL.md` concise.
+- Use scripts for deterministic, repeatable, error-prone flows.
+- Use references for detailed knowledge.
+- Use assets for templates and static resources.
+- Make the description clear about trigger conditions and boundaries.
+- Do not write development logs, test process, or temporary debug explanations.
 
-### 3. 建立 eval set
+### 3. Build The Eval Set
 
-根据 contract 创建初始 eval set。至少包含：
+Create the initial eval set from the contract. Include at least:
 
-- should-trigger；
-- should-not-trigger；
-- 端到端成功路径；
-- 近邻误触发样例；
-- 已知边界情况；
-- 如有历史失败样例，必须纳入。
+- should-trigger;
+- should-not-trigger;
+- end-to-end success path;
+- adjacent false-trigger examples;
+- known edge cases;
+- historical failure examples, if any.
 
-eval 文件建议保存到：
+Recommended eval file path:
 
 `skill-factory-workspace/<target-skill-name>/evals/evals.json`
 
-### 4. Clean execution
+### 4. Clean Execution
 
-对每个 eval，spawn `skill_executor`，传入：
+For each eval, spawn `skill_executor` and pass:
 
-- 候选 skill 路径；
-- eval prompt；
-- 输入 fixtures；
-- 输出目录；
-- 需要保存的 artifacts 类型。
+- candidate skill path;
+- eval prompt;
+- input fixtures;
+- output directory;
+- artifact types that must be saved.
 
-executor 只能执行，不得修改目标 skill。
+The executor can only execute and must not modify the target skill.
 
-每个 eval 输出保存到：
+Save each eval output under:
 
 `skill-factory-workspace/<target-skill-name>/iteration-<N>/<eval-id>/with_skill/`
 
-必要时同时运行 baseline：
+When needed, also run a baseline:
 
-- 新 skill：without_skill；
-- 改已有 skill：old_skill snapshot。
+- New skill: without_skill.
+- Existing skill update: old_skill snapshot.
 
-### 5. Independent verification
+### 5. Independent Verification
 
-对每个 eval，spawn `skill_verifier`，传入：
+For each eval, spawn `skill_verifier` and pass:
 
-- contract；
-- eval metadata；
-- executor logs；
-- outputs/artifacts；
-- baseline 输出，如有。
+- contract;
+- eval metadata;
+- executor logs;
+- outputs/artifacts;
+- baseline output, if any.
 
-verifier 只判定，不修改。
+The verifier only judges and does not modify files.
 
-### 6. Evidence gate
+### 6. Evidence Gate
 
-整体通过条件：
+Overall pass conditions:
 
-- 所有 MUST 均 pass；
-- 没有高严重度 regression；
-- should-trigger 与 should-not-trigger 没有关键错误；
-- artifacts、logs、verdict 足以复现；
-- verifier overall 为 pass。
+- all MUST items pass;
+- no high-severity regression;
+- should-trigger and should-not-trigger behavior has no critical error;
+- artifacts, logs, and verdicts are sufficient for reproduction;
+- verifier overall is pass.
 
-若失败：
+If verification fails:
 
-- 汇总 verifier 的 `next_patch_brief`；
-- 交给 `skill_developer` 修复；
-- 进入下一 iteration；
-- 重新从头运行相关 eval。若修改影响触发、输入、输出或核心流程，必须重跑全部 eval。
+- collect the verifier's `next_patch_brief`;
+- give it to `skill_developer` for repair;
+- enter the next iteration;
+- rerun the relevant evals from the beginning. If the change affects triggers, input, output, or core workflow, rerun all evals.
 
-### 7. 交付
+### 7. Delivery
 
-交付时输出：
+On delivery, output:
 
-- skill 路径；
-- contract 路径；
-- eval 覆盖范围；
-- iteration 数；
-- 最终 verifier verdict；
-- 主要证据路径；
-- 已知限制；
-- 用户如何调用该 skill；
-- 后续如何添加新 eval 或继续迭代。
+- skill path;
+- contract path;
+- eval coverage;
+- iteration count;
+- final verifier verdict;
+- main evidence paths;
+- known limitations;
+- how the user can invoke the skill;
+- how to add new evals or continue iteration later.
 
-## 停止条件
+## Stop Conditions
 
-停止并交付：
+Stop and deliver:
 
-- 所有 MUST 通过，verifier pass。
+- All MUST items pass and the verifier passes.
 
-停止并报告 blocked：
+Stop and report blocked:
 
-- contract 冲突；
-- 缺少必要用户资源；
-- 环境无法执行关键测试；
-- 安全或权限要求无法满足。
+- the contract conflicts;
+- required user resources are missing;
+- the environment cannot run a key test;
+- safety or permission requirements cannot be met.
 
-停止并报告未收敛：
+Stop and report not converged:
 
-- 多轮修复后同一 MUST 仍失败；
-- verifier 判断修改开始过拟合；
-- 新修改持续引入高严重度回归。
+- the same MUST still fails after multiple repair rounds;
+- the verifier judges that changes are becoming overfit;
+- new changes keep introducing high-severity regressions.
 
-## 运行协议
+## Run Protocol
 
-具体目录、metadata、verdict schema 见：
+For concrete directories, metadata, and verdict schemas, see:
 
 `references/run-protocol.md`

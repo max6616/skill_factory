@@ -1,100 +1,100 @@
 # Skill Factory
 
-Skill Factory 是一个面向 Codex 的最小 skill 开发基础设施。
+Skill Factory is a minimal Codex skill-development infrastructure.
 
-它的目标是让用户只需要说明：
+Its goal is to let the user only describe:
 
-- 我能提供什么；
-- 我想要什么；
-- 输入是什么；
-- 输出是什么；
-- 验收标准是什么；
-- 有哪些方案要求或限制；
+- what they can provide;
+- what they want;
+- what the input is;
+- what the output is;
+- what the acceptance criteria are;
+- what implementation requirements or constraints exist;
 
-之后由 agent 开发设施接管，将目标整理成 contract，创建 skill，执行测试，修复失败，独立验收，并在满足 contract 后交付。
+then let the agent-development infrastructure take over: turn the goal into a contract, create the skill, run tests, fix failures, verify independently, and deliver once the contract is satisfied.
 
-核心原则是：
+The core principle is:
 
-> 不让同一个 Agent 在同一个上下文里同时扮演开发者、执行者和验收者。  
-> Skill 的通过必须来自干净执行、全流程测试和可审计证据，而不是来自“这次会话里看起来跑通了”。
+> Do not let the same Agent act as developer, executor, and verifier in the same context.  
+> A Skill passes only through clean execution, end-to-end testing, and auditable evidence, not because "it looked like it worked in this session."
 
 ---
 
-## 项目定位
+## Project Positioning
 
-本项目不是重写 Codex 内置的 `$skill-creator`。
+This project does not reimplement Codex's built-in `$skill-creator`.
 
-Codex 已经提供了成熟的 skill 创建逻辑，包括：
+Codex already provides mature skill-creation logic, including:
 
 - `SKILL.md`
 - `scripts/`
 - `references/`
 - `assets/`
-- skill description 触发
-- 渐进披露
-- 基础验证
+- skill description triggering
+- progressive disclosure
+- baseline validation
 
-因此，本项目只补充 `$skill-creator` 没有完全覆盖的工程闭环：
+Therefore, this project only adds the engineering loop that `$skill-creator` does not fully cover:
 
-- contract 制定；
-- developer / executor / verifier 身份隔离；
-- clean run；
-- eval corpus；
-- evidence gate；
-- fail → patch → rerun 循环；
-- 最终交付报告。
+- contract creation;
+- developer / executor / verifier role isolation;
+- clean runs;
+- eval corpus;
+- evidence gate;
+- fail -> patch -> rerun loop;
+- final delivery report.
 
 ---
 
-## 核心结构
+## Core Structure
 
 ```text
 skill_factory/
-├── AGENTS.md
-├── .gitignore
-├── .codex/
-│   ├── config.toml
-│   └── agents/
-│       ├── skill-developer.toml
-│       ├── skill-executor.toml
-│       └── skill-verifier.toml
-└── .agents/
-    └── skills/
-        ├── contract-maker/
-        │   ├── SKILL.md
-        │   └── references/
-        │       └── contract-template.md
-        └── skill-factory-loop/
-            ├── SKILL.md
-            └── references/
-                └── run-protocol.md
+|-- AGENTS.md
+|-- .gitignore
+|-- .codex/
+|   |-- config.toml
+|   `-- agents/
+|       |-- skill-developer.toml
+|       |-- skill-executor.toml
+|       `-- skill-verifier.toml
+`-- .agents/
+    `-- skills/
+        |-- contract-maker/
+        |   |-- SKILL.md
+        |   `-- references/
+        |       `-- contract-template.md
+        `-- skill-factory-loop/
+            |-- SKILL.md
+            `-- references/
+                `-- run-protocol.md
 ```
 
 ---
 
-## 主要组件
+## Main Components
 
 ### 1. `contract-maker`
 
-负责把用户的顶层目标整理成稳定、可执行、可验收的 skill contract。
+Turns the user's top-level goal into a stable, executable, verifiable skill contract.
 
-contract 是后续开发、测试、修复和验收的唯一事实来源。
+The contract is the single source of truth for later development, testing, repair, and verification.
 
-它会定义：
+It defines:
 
-- skill 目标；
-- 用户可提供内容；
-- 输入定义；
-- 输出定义；
-- should-trigger 条件；
-- should-not-trigger 条件；
-- MUST / SHOULD / COULD 验收标准；
-- 方案约束；
-- eval 设计；
-- 证据要求；
-- 完成定义。
+- skill goal;
+- user-provided content;
+- input definition;
+- output definition;
+- should-trigger conditions;
+- should-not-trigger conditions;
+- MUST / SHOULD / COULD acceptance criteria;
+- implementation constraints;
+- eval design;
+- evidence requirements;
+- definition of done.
 
-contract 默认保存到：
+Contracts are saved by default to:
 
 ```text
 contracts/<skill-name>.contract.md
@@ -104,26 +104,26 @@ contracts/<skill-name>.contract.md
 
 ### 2. `skill-factory-loop`
 
-负责在 contract 确认后接管后续开发流程。
+Takes over the development process after the contract is confirmed.
 
-它会编排：
+It orchestrates:
 
-1. 检查 contract 是否足够开发；
-2. 调用 Codex 内置 `$skill-creator` 创建或更新目标 skill；
-3. 建立 eval set；
-4. 使用 `skill_executor` 从干净环境执行 eval；
-5. 使用 `skill_verifier` 独立验收 artifacts、logs 和 verdict；
-6. 若失败，将 verifier 的失败摘要交给 `skill_developer` 修复；
-7. 修复后重新从头测试；
-8. 满足所有 MUST 后交付。
+1. Check whether the contract is ready for development.
+2. Use Codex's built-in `$skill-creator` to create or update the target skill.
+3. Build the eval set.
+4. Use `skill_executor` to execute evals from a clean environment.
+5. Use `skill_verifier` to independently verify artifacts, logs, and verdicts.
+6. If verification fails, give the verifier's failure summary to `skill_developer` for repair.
+7. After repair, rerun testing from the beginning.
+8. Deliver after all MUST criteria pass.
 
-目标 skill 默认保存到：
+Target skills are saved by default to:
 
 ```text
 .agents/skills/<target-skill-name>/
 ```
 
-运行过程默认保存到：
+Run data is saved by default to:
 
 ```text
 skill-factory-workspace/<target-skill-name>/
@@ -133,39 +133,39 @@ skill-factory-workspace/<target-skill-name>/
 
 ### 3. `skill_developer`
 
-Codex custom agent。
+Codex custom agent.
 
-职责：
+Responsibilities:
 
-- 使用 `$skill-creator` 创建或更新 skill；
-- 根据 verifier 的失败报告修复 skill；
-- 将确定性、重复性、易错步骤沉淀为 `scripts/`；
-- 将详细资料沉淀为 `references/`；
-- 将模板和静态资源沉淀为 `assets/`。
+- Use `$skill-creator` to create or update the skill.
+- Fix the skill based on verifier failure reports.
+- Put deterministic, repeatable, error-prone steps into `scripts/`.
+- Put detailed reference material into `references/`.
+- Put templates and static resources into `assets/`.
 
-禁止：
+Forbidden:
 
-- 给自己判定通过；
-- 修改 verifier verdict；
-- 删除 eval 或降低验收标准；
-- 将临时 debug 过程写进目标 skill。
+- Decide that its own work passes.
+- Modify verifier verdicts.
+- Delete evals or lower acceptance standards.
+- Write temporary debug process into the target skill.
 
 ---
 
 ### 4. `skill_executor`
 
-Codex custom agent。
+Codex custom agent.
 
-职责：
+Responsibilities:
 
-- 从干净初始条件执行 eval；
-- 像真实用户一样运行候选 skill；
-- 保存 outputs、logs、trace 摘要和执行结果；
-- 不读取 developer 的修复理由；
-- 不修改目标 skill；
-- 不判断 contract 是否通过。
+- Execute evals from clean initial conditions.
+- Run the candidate skill like a real user would.
+- Save outputs, logs, trace summaries, and execution results.
+- Do not read the developer's fix rationale.
+- Do not modify the target skill.
+- Do not decide whether the contract passes.
 
-每次执行应产生：
+Each execution should produce:
 
 ```text
 execution_summary.json
@@ -175,17 +175,17 @@ execution_summary.json
 
 ### 5. `skill_verifier`
 
-Codex custom agent。
+Codex custom agent.
 
-职责：
+Responsibilities:
 
-- 根据 contract、eval metadata、execution summary 和 artifacts 独立验收；
-- 判断 MUST / SHOULD / COULD；
-- 检查 should-trigger / should-not-trigger；
-- 检查是否存在过拟合、误触发、上下文污染或局部修复破坏全流程；
-- 输出下一轮 patch brief。
+- Independently verify from the contract, eval metadata, execution summary, and artifacts.
+- Judge MUST / SHOULD / COULD.
+- Check should-trigger / should-not-trigger behavior.
+- Check for overfitting, false triggering, context contamination, or local fixes that break the full workflow.
+- Output the next patch brief.
 
-每次验收应产生：
+Each verification should produce:
 
 ```text
 verifier_verdict.json
@@ -193,11 +193,11 @@ verifier_verdict.json
 
 ---
 
-## 运行前准备
+## Setup Before Running
 
-### 1. 从仓库根目录启动 Codex
+### 1. Start Codex From The Repository Root
 
-必须在 repo root 启动 Codex，确保 Codex 能读取：
+Start Codex from the repo root so Codex can read:
 
 ```text
 AGENTS.md
@@ -206,47 +206,47 @@ AGENTS.md
 .codex/agents/
 ```
 
-启动示例：
+Example:
 
 ```bash
 cd skill_factory
 codex
 ```
 
-首次使用时，根据 Codex 提示信任当前 project config。
+On first use, trust the current project config when Codex prompts you.
 
 ---
 
-### 2. 检查 skills 是否可见
+### 2. Check That Skills Are Visible
 
-在 Codex 中运行：
+Run this in Codex:
 
 ```text
 /skills
 ```
 
-应能看到至少两个 repo-scoped skills：
+You should see at least two repo-scoped skills:
 
 - `contract-maker`
 - `skill-factory-loop`
 
 ---
 
-### 3. 不建议使用过宽权限
+### 3. Avoid Overly Broad Permissions
 
-不建议在本项目中使用过宽的运行模式，例如：
+Avoid overly broad run modes in this project, for example:
 
 ```bash
 codex --yolo
 ```
 
-原因是本项目依赖身份隔离和权限边界。父会话过宽的 sandbox 或 approval override 可能削弱 verifier 的只读语义。
+The reason is that this project relies on role isolation and permission boundaries. An overly broad parent-session sandbox or approval override may weaken the verifier's read-only semantics.
 
 ---
 
-### 4. 不要提交运行产物
+### 4. Do Not Commit Run Artifacts
 
-以下内容通常不应提交到公开仓库：
+The following content usually should not be committed to a public repository:
 
 ```text
 skill-factory-workspace/
@@ -255,10 +255,10 @@ tmp/
 outputs/
 artifacts/
 private contracts/
-用户输入样例中的敏感文件
+sensitive files from user input examples
 ```
 
-建议 `.gitignore` 至少忽略：
+The `.gitignore` should at least ignore:
 
 ```gitignore
 .DS_Store
@@ -281,62 +281,62 @@ contracts/private/
 
 ---
 
-## 推荐工作流
+## Recommended Workflow
 
-### 阶段 1：用户提供顶层目标
+### Phase 1: The User Provides The Top-Level Goal
 
-用户只需要描述：
+The user only needs to describe:
 
-- 想创建什么 skill；
-- 可以提供哪些输入；
-- 期望输出是什么；
-- 如何判断成功；
-- 有哪些限制或偏好。
+- what skill they want to create;
+- what inputs they can provide;
+- what output they expect;
+- how success should be judged;
+- what constraints or preferences exist.
 
-推荐 prompt：
+Recommended prompt:
 
 ```text
-请使用 contract-maker。我要创建一个新的 Codex skill。
+Please use contract-maker. I want to create a new Codex skill.
 
-我能提供：
-- <文件、文本、示例、偏好、工具、环境>
+I can provide:
+- <files, text, examples, preferences, tools, environment>
 
-我想要：
-- <skill 最终要帮我稳定完成什么>
+I want:
+- <what the skill should reliably help me do>
 
-输入：
-- <输入类型、格式、边界情况>
+Input:
+- <input type, format, edge cases>
 
-输出：
-- <输出格式、文件、质量标准>
+Output:
+- <output format, files, quality standards>
 
-验收标准：
-- <MUST / SHOULD / COULD；如果我没有分层，请帮我分层>
+Acceptance criteria:
+- <MUST / SHOULD / COULD; if I did not layer them, please layer them for me>
 
-方案要求：
-- <必须使用或禁止使用的技术、风格、工具、流程>
+Implementation requirements:
+- <required or forbidden technologies, style, tools, workflow>
 
-请先生成 contract 草案。
-只问阻塞性问题；非阻塞缺口请写入默认假设。
+Please generate a contract draft first.
+Only ask blocking questions; write non-blocking gaps as default assumptions.
 ```
 
 ---
 
-### 阶段 2：确认 contract
+### Phase 2: Confirm The Contract
 
-`contract-maker` 会生成 contract 草案。
+`contract-maker` generates a contract draft.
 
-用户需要检查：
+The user should check:
 
-- 目标是否正确；
-- 输入输出是否完整；
-- MUST 是否真的必须；
-- SHOULD / COULD 是否合理；
-- 触发条件是否准确；
-- 非触发条件是否覆盖相邻误用；
-- 验收标准是否可测试。
+- whether the goal is correct;
+- whether inputs and outputs are complete;
+- whether each MUST is truly mandatory;
+- whether SHOULD / COULD items are reasonable;
+- whether trigger conditions are accurate;
+- whether non-trigger conditions cover adjacent misuse;
+- whether acceptance criteria are testable.
 
-确认后，将 contract 保存为：
+After confirmation, save the contract as:
 
 ```text
 contracts/<skill-name>.contract.md
@@ -344,200 +344,200 @@ contracts/<skill-name>.contract.md
 
 ---
 
-### 阶段 3：交给 skill-factory-loop 接管
+### Phase 3: Hand Off To skill-factory-loop
 
-推荐 prompt：
+Recommended prompt:
 
 ```text
-请使用 skill-factory-loop 接管后续流程。
+Please use skill-factory-loop to take over the rest of the process.
 
-contract 路径：
+Contract path:
 contracts/<skill-name>.contract.md
 
-本轮允许使用 subagents/custom agents：
+This round may use subagents/custom agents:
 - skill_developer
 - skill_executor
 - skill_verifier
 
-要求：
-1. 使用 Codex 内置 $skill-creator 创建或更新目标 skill。
-2. 使用 developer / executor / verifier 身份隔离执行。
-3. 每次修改后，从干净初始条件重新运行相关 eval。
-4. 不需要我参与实现细节。
-5. 只有 contract 冲突、缺少必要资源、安全权限问题时才询问我。
-6. 直到所有 MUST 通过，并给出最终交付报告。
+Requirements:
+1. Use Codex's built-in $skill-creator to create or update the target skill.
+2. Use developer / executor / verifier role isolation.
+3. After every change, rerun the relevant evals from clean initial conditions.
+4. I do not need to participate in implementation details.
+5. Ask me only if the contract conflicts, required resources are missing, or there is a safety/permission issue.
+6. Continue until all MUST criteria pass and provide a final delivery report.
 ```
 
 ---
 
 ## Smoke Test
 
-正式开发真实 skill 前，建议先跑一次最小 smoke test。
+Before developing a real skill, run a minimal smoke test.
 
-目标不是创建有价值的 skill，而是确认基础设施链路闭合：
+The goal is not to create a valuable skill, but to confirm that the infrastructure loop closes:
 
-- contract 能生成；
-- `$skill-creator` 能创建目标 skill；
-- 三个 custom agents 能被使用；
-- eval set 能建立；
-- executor 能写 `execution_summary.json`；
-- verifier 能写 `verifier_verdict.json`；
-- 至少能完成一次 fail → patch → rerun；
-- 最终能生成交付报告。
+- the contract can be generated;
+- `$skill-creator` can create the target skill;
+- the three custom agents can be used;
+- the eval set can be built;
+- the executor can write `execution_summary.json`;
+- the verifier can write `verifier_verdict.json`;
+- at least one fail -> patch -> rerun loop can complete;
+- a final delivery report can be generated.
 
-推荐 smoke test prompt：
+Recommended smoke test prompt:
 
 ```text
-请使用 contract-maker，然后使用 skill-factory-loop 接管。
+Please use contract-maker, then use skill-factory-loop to take over.
 
-我要创建一个 toy skill：text-normalizer。
+I want to create a toy skill: text-normalizer.
 
-目标：
-把用户提供的一段文本转换为规范化输出。
+Goal:
+Convert a text snippet provided by the user into normalized output.
 
-规则：
-- 去除首尾空白；
-- 连续空格压缩为一个空格；
-- 输出 Markdown 代码块；
-- 不改变中文标点；
-- 如果输入为空，输出 EMPTY_INPUT。
+Rules:
+- Trim leading and trailing whitespace.
+- Collapse consecutive spaces into one space.
+- Output a Markdown code block.
+- Do not change CJK punctuation.
+- If the input is empty, output EMPTY_INPUT.
 
-输入：
-- 用户直接提供的一段文本。
+Input:
+- A text snippet provided directly by the user.
 
-输出：
-- 一个 Markdown 代码块。
-- 代码块内是规范化后的文本。
-- 空输入时，代码块内输出 EMPTY_INPUT。
+Output:
+- One Markdown code block.
+- The code block contains the normalized text.
+- For empty input, the code block contains EMPTY_INPUT.
 
-MUST：
-- 正常输入能规范化；
-- 空输入能输出 EMPTY_INPUT；
-- 输出必须是 Markdown 代码块；
-- 不得依赖本次 session 的临时信息；
-- 必须至少包含一个 should-trigger eval 和一个 should-not-trigger eval。
+MUST:
+- Normal input can be normalized.
+- Empty input can output EMPTY_INPUT.
+- Output must be a Markdown code block.
+- The skill must not depend on temporary information from this session.
+- There must be at least one should-trigger eval and one should-not-trigger eval.
 
-SHOULD：
-- skill 的 description 能清楚说明何时使用和何时不使用；
-- eval 结果应保存 execution_summary.json 和 verifier_verdict.json。
+SHOULD:
+- The skill description should clearly explain when to use it and when not to use it.
+- Eval results should save execution_summary.json and verifier_verdict.json.
 
-本轮允许使用 subagents/custom agents：
+This round may use subagents/custom agents:
 - skill_developer
 - skill_executor
 - skill_verifier
 
-请先生成 contract 草案。
-contract 确认后，使用 skill-factory-loop 完成创建、测试、修复和交付。
+Please generate a contract draft first.
+After the contract is confirmed, use skill-factory-loop to complete creation, testing, repair, and delivery.
 ```
 
 ---
 
-## 成功交付标准
+## Successful Delivery Standard
 
-一个 skill 可以交付，当且仅当：
+A skill can be delivered if and only if:
 
-- contract 中所有 MUST 均通过；
-- 没有高严重度 regression；
-- should-trigger / should-not-trigger 没有关键错误；
-- executor 输出 artifacts 可定位；
-- verifier verdict 可追溯到 artifacts、logs 或明确 rubric；
-- 修改后已重新从头执行相关 eval；
-- 最终报告说明已知限制和使用方法。
+- all MUST criteria in the contract pass;
+- there is no high-severity regression;
+- should-trigger / should-not-trigger behavior has no critical error;
+- executor output artifacts can be located;
+- verifier verdicts can be traced to artifacts, logs, or an explicit rubric;
+- relevant evals have been rerun from the beginning after changes;
+- the final report explains known limitations and usage.
 
-最终交付报告至少应包含：
+The final delivery report must include at least:
 
 ```text
-skill 路径
-contract 路径
-eval 覆盖范围
-iteration 数
-最终 verifier verdict
-主要证据路径
-已知限制
-用户如何调用该 skill
-后续如何继续迭代
+skill path
+contract path
+eval coverage
+iteration count
+final verifier verdict
+main evidence paths
+known limitations
+how the user can invoke this skill
+how to continue iterating later
 ```
 
 ---
 
-## 运行产物约定
+## Run Artifact Conventions
 
-每个目标 skill 使用独立工作区：
+Each target skill uses its own workspace:
 
 ```text
 skill-factory-workspace/<target-skill-name>/
-├── evals/
-│   └── evals.json
-├── baselines/
-│   ├── without_skill/
-│   └── old_skill/
-├── iteration-001/
-│   ├── eval-001/
-│   │   ├── eval_metadata.json
-│   │   ├── with_skill/
-│   │   │   ├── outputs/
-│   │   │   └── execution_summary.json
-│   │   ├── baseline/
-│   │   │   ├── outputs/
-│   │   │   └── execution_summary.json
-│   │   └── verifier_verdict.json
-│   └── iteration_summary.json
-└── final_report.md
+|-- evals/
+|   `-- evals.json
+|-- baselines/
+|   |-- without_skill/
+|   `-- old_skill/
+|-- iteration-001/
+|   |-- eval-001/
+|   |   |-- eval_metadata.json
+|   |   |-- with_skill/
+|   |   |   |-- outputs/
+|   |   |   `-- execution_summary.json
+|   |   |-- baseline/
+|   |   |   |-- outputs/
+|   |   |   `-- execution_summary.json
+|   |   `-- verifier_verdict.json
+|   `-- iteration_summary.json
+`-- final_report.md
 ```
 
-这些运行产物默认是开发过程证据，不是目标 skill 的一部分。
+These run artifacts are development evidence by default, not part of the target skill.
 
-不要把运行日志、失败记录、临时假设或 debug 过程写进目标 skill 的 `SKILL.md`。
+Do not write run logs, failure records, temporary assumptions, or debug process into the target skill's `SKILL.md`.
 
 ---
 
-## Baseline 规则
+## Baseline Rules
 
-baseline 用于比较“没有新 skill”或“旧 skill”的表现。
+The baseline is used to compare behavior "without the new skill" or with the "old skill."
 
-新 skill：
+New skill:
 
 ```text
 baseline = without_skill
 ```
 
-更新已有 skill：
+Updating an existing skill:
 
 ```text
 baseline = old_skill snapshot
 ```
 
-注意：
+Note:
 
-如果无法保证 baseline 真的没有调用候选 skill，则 baseline 只能标记为 heuristic、not_run 或 blocked，不能作为强改进证据。
+If you cannot guarantee that the baseline truly did not call the candidate skill, mark the baseline only as heuristic, not_run, or blocked. Do not use it as strong improvement evidence.
 
 ---
 
-## 当前边界
+## Current Boundaries
 
-当前版本是最小起点基础设施。
+The current version is a minimal starting infrastructure.
 
-它依赖：
+It depends on:
 
-- Codex repo-scoped skills；
-- Codex custom agents；
-- `$skill-creator`；
-- protocol-level evidence gate。
+- Codex repo-scoped skills;
+- Codex custom agents;
+- `$skill-creator`;
+- a protocol-level evidence gate.
 
-当前版本暂不包含完整 deterministic controller。
+The current version does not yet include a complete deterministic controller.
 
-也就是说，流程控制仍主要由 `skill-factory-loop` 的协议和 Codex agent 执行能力完成，而不是由独立脚本强制状态转移。
+In other words, process control is still mostly handled by the `skill-factory-loop` protocol and Codex agent execution capability, rather than by an independent script that enforces state transitions.
 
-如果 smoke test 中出现以下问题，应考虑新增脚本控制器：
+If the smoke test shows any of the following issues, consider adding a script controller:
 
-- loop 跳过 verifier；
-- executor 没有写 artifacts；
-- verifier 只给自然语言判断，没有 JSON verdict；
-- 失败后 developer 修了局部但没有重跑 eval；
-- agent 修改 eval 或降低标准来让自己通过；
-- 多轮后状态混乱，无法判断当前 iteration。
+- the loop skips the verifier;
+- the executor does not write artifacts;
+- the verifier gives only a natural-language judgment and no JSON verdict;
+- after failure, the developer fixes a local fragment but does not rerun evals;
+- an agent modifies evals or lowers standards to make itself pass;
+- after multiple rounds, state is confused and the current iteration cannot be identified.
 
-未来可新增：
+Possible future additions:
 
 ```text
 scripts/run_iteration.py
@@ -547,139 +547,139 @@ scripts/collect_evidence.py
 
 ---
 
-## 设计原则
+## Design Principles
 
-### 1. Contract 是唯一事实来源
+### 1. The Contract Is The Single Source Of Truth
 
-开发过程中的解释、猜测、临时 debug 结论、局部修复理由，都不能替代 contract。
+Explanations, guesses, temporary debug conclusions, and local fix rationales from development cannot replace the contract.
 
-### 2. Skill 不应携带开发上下文
+### 2. The Skill Should Not Carry Development Context
 
-目标 skill 只应包含执行者需要的程序性知识、必要引用、脚本和资源。
+The target skill should contain only the procedural knowledge, necessary references, scripts, and resources the executor needs.
 
-不应包含：
+It should not include:
 
-- 本轮失败日志；
-- developer 的思考过程；
-- 临时 workaround；
-- 只适用于当前 session 的路径或文件名；
-- 为某个 eval 硬编码的补丁。
+- failure logs from this round;
+- the developer's reasoning process;
+- temporary workarounds;
+- paths or filenames that apply only to the current session;
+- patches hardcoded for a specific eval.
 
-### 3. 开发、执行、验收必须分离
+### 3. Development, Execution, And Verification Must Be Separated
 
-同一个 agent 同时开发、执行、验收，容易产生：
+When the same agent develops, executes, and verifies, it can easily create:
 
-- 上下文污染；
-- 确认偏差；
-- 临时补丁化；
-- 局部通过但全流程破坏。
+- context contamination;
+- confirmation bias;
+- temporary patching;
+- local pass with full-workflow breakage.
 
-### 4. 通过必须有证据
+### 4. Passing Requires Evidence
 
-不得用：
+Do not use:
 
 ```text
-我认为完成了
-看起来没问题
-应该可以
-我已经测试过
+I think it is done
+It looks fine
+It should work
+I already tested it
 ```
 
-作为通过依据。
+as passing evidence.
 
-通过必须来自：
+Passing must come from:
 
-- artifacts；
-- logs；
-- trace summary；
-- checks；
-- verifier verdict；
-- contract criteria mapping。
+- artifacts;
+- logs;
+- trace summaries;
+- checks;
+- verifier verdicts;
+- contract criteria mapping.
 
-### 5. 每次修复后重新从头测试
+### 5. Retest From The Beginning After Every Fix
 
-不允许只重跑失败片段并声称通过。
+Do not rerun only the failed fragment and claim it passes.
 
-若修改影响：
+If a change affects:
 
-- 触发条件；
-- 输入处理；
-- 输出格式；
-- 核心流程；
-- scripts；
-- references；
-- description；
+- trigger conditions;
+- input handling;
+- output format;
+- core workflow;
+- scripts;
+- references;
+- description;
 
-则必须重新运行相关 eval。必要时重跑全部 eval。
+then rerun the relevant evals. Rerun all evals when necessary.
 
 ---
 
-## 推荐正式开发启动模板
+## Recommended Formal Development Start Template
 
 ```text
-请使用 contract-maker 创建 contract，然后在我确认后使用 skill-factory-loop 接管。
+Please use contract-maker to create a contract, then use skill-factory-loop after I confirm it.
 
-我要创建的 skill：
-<一句话目标>
+The skill I want to create:
+<one-sentence goal>
 
-我能提供：
-- <文件、文本、样例、偏好、工具、环境>
+I can provide:
+- <files, text, examples, preferences, tools, environment>
 
-输入：
-- <输入类型、格式、边界情况>
+Input:
+- <input type, format, edge cases>
 
-输出：
-- <输出格式、文件、质量标准>
+Output:
+- <output format, files, quality standards>
 
-验收标准：
+Acceptance criteria:
 MUST:
-- <必须满足的条件>
+- <mandatory conditions>
 
 SHOULD:
-- <强烈建议满足的条件>
+- <strongly recommended conditions>
 
 COULD:
-- <可选增强>
+- <optional enhancements>
 
-方案要求：
-- <必须使用 / 禁止使用 / 偏好>
+Implementation requirements:
+- <required / forbidden / preferred>
 
-触发条件：
-- <用户怎样表达时应触发>
+Trigger conditions:
+- <how the user should express the request for the skill to trigger>
 
-非触发条件：
-- <哪些相邻任务不应触发>
+Non-trigger conditions:
+- <which adjacent tasks should not trigger the skill>
 
-本轮允许使用 subagents/custom agents：
+This round may use subagents/custom agents:
 - skill_developer
 - skill_executor
 - skill_verifier
 
-请先生成 contract 草案。
-只问阻塞性问题；非阻塞缺口请写入默认假设。
+Please generate a contract draft first.
+Only ask blocking questions; write non-blocking gaps as default assumptions.
 ```
 
 ---
 
-## 项目状态
+## Project Status
 
-当前项目状态：
+Current project status:
 
 ```text
 alpha / smoke-test-first
 ```
 
-推荐顺序：
+Recommended order:
 
-1. 先跑 toy skill smoke test；
-2. 确认 contract → skill → eval → execution summary → verifier verdict → final report 链路闭合；
-3. 再进入第一个真实 skill 开发；
-4. 若流程不稳定，再补 deterministic controller。
+1. Run the toy skill smoke test first.
+2. Confirm that the contract -> skill -> eval -> execution summary -> verifier verdict -> final report loop closes.
+3. Then move into the first real skill development.
+4. If the process is unstable, add the deterministic controller.
 
 ---
 
-## 一句话总结
+## One-Sentence Summary
 
-Skill Factory 的目标不是让 Agent 更忙，而是让 skill 开发从“会话里的临时修补”升级为：
+Skill Factory's goal is not to make the Agent busier, but to upgrade skill development from "temporary patching inside a session" into:
 
-> contract 驱动、身份隔离、干净执行、证据验收、可复现迭代的工程循环。
+> a contract-driven, role-isolated, cleanly executed, evidence-verified, reproducible iteration loop.
