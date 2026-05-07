@@ -23,7 +23,7 @@ contract 确认后，除非缺少必要外部资源、存在安全/权限问题�
 开发、执行、验收必须分离：
 
 - `skill_developer`：只负责创建、修改、修复目标 skill，不允许给自己判定通过。
-- `clean_skill_executor`：只负责在干净初始条件下执行 eval prompt，不读取 developer 的修复理由，不修改目标 skill。
+- `skill_executor`：只负责在干净初始条件下执行 eval prompt，不读取 developer 的修复理由，不修改目标 skill。
 - `skill_verifier`：只根据 contract、eval metadata、trace、logs、artifacts 和输出进行验收，不继承实现者假设，不修改目标 skill。
 
 ## 证据门

@@ -56,7 +56,7 @@ skill_factory/
 │   ├── config.toml
 │   └── agents/
 │       ├── skill-developer.toml
-│       ├── clean-skill-executor.toml
+│       ├── skill-executor.toml
 │       └── skill-verifier.toml
 └── .agents/
     └── skills/
@@ -111,7 +111,7 @@ contracts/<skill-name>.contract.md
 1. 检查 contract 是否足够开发；
 2. 调用 Codex 内置 `$skill-creator` 创建或更新目标 skill；
 3. 建立 eval set；
-4. 使用 `clean_skill_executor` 从干净环境执行 eval；
+4. 使用 `skill_executor` 从干净环境执行 eval；
 5. 使用 `skill_verifier` 独立验收 artifacts、logs 和 verdict；
 6. 若失败，将 verifier 的失败摘要交给 `skill_developer` 修复；
 7. 修复后重新从头测试；
@@ -152,7 +152,7 @@ Codex custom agent。
 
 ---
 
-### 4. `clean_skill_executor`
+### 4. `skill_executor`
 
 Codex custom agent。
 
@@ -356,7 +356,7 @@ contracts/<skill-name>.contract.md
 
 本轮允许使用 subagents/custom agents：
 - skill_developer
-- clean_skill_executor
+- skill_executor
 - skill_verifier
 
 要求：
@@ -423,7 +423,7 @@ SHOULD：
 
 本轮允许使用 subagents/custom agents：
 - skill_developer
-- clean_skill_executor
+- skill_executor
 - skill_verifier
 
 请先生成 contract 草案。
@@ -652,7 +652,7 @@ COULD:
 
 本轮允许使用 subagents/custom agents：
 - skill_developer
-- clean_skill_executor
+- skill_executor
 - skill_verifier
 
 请先生成 contract 草案。

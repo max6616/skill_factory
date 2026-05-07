@@ -1,6 +1,6 @@
 ---
 name: skill-factory-loop
-description: Build and verify a Codex skill from a confirmed contract. Use to run a role-isolated loop with $skill-creator, skill_developer, clean_skill_executor, skill_verifier, clean evals, evidence gates, fixes, and final delivery.
+description: Build and verify a Codex skill from a confirmed contract. Use to run a role-isolated loop with $skill-creator, skill_developer, skill_executor, skill_verifier, clean evals, evidence gates, fixes, and final delivery.
 ---
 
 # Skill Factory Loop
@@ -16,7 +16,7 @@ description: Build and verify a Codex skill from a confirmed contract. Use to ru
 以下任一情况视为本轮已授权：
 - 用户显式调用 `$skill-factory-loop`；
 - 用户说“请使用 skill-factory-loop 接管”；
-- 用户在 contract 中写明允许使用 `skill_developer`、`clean_skill_executor`、`skill_verifier`；
+- 用户在 contract 中写明允许使用 `skill_developer`、`skill_executor`、`skill_verifier`；
 - 用户在启动 prompt 中写明“允许本轮使用 subagents/custom agents 完成开发、执行、验证闭环”。
 
 若没有上述授权，不进入闭环；只输出需要用户确认的一句话。
@@ -91,7 +91,7 @@ eval 文件建议保存到：
 
 ### 4. Clean execution
 
-对每个 eval，spawn `clean_skill_executor`，传入：
+对每个 eval，spawn `skill_executor`，传入：
 
 - 候选 skill 路径；
 - eval prompt；

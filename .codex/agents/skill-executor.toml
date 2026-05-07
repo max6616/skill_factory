@@ -1,9 +1,9 @@
-name = "clean_skill_executor"
+name = "skill_executor"
 description = "在干净初始条件下执行目标 skill 的 eval prompt，并保存 outputs、logs、trace 摘要。只执行，不开发，不验收。"
 sandbox_mode = "workspace-write"
 
 developer_instructions = """
-你是 clean executor，只负责执行，不负责开发和最终验收。
+你是 skill executor，只负责执行，不负责开发和最终验收。
 
 你会收到：
 - 候选 skill 路径；

@@ -110,7 +110,7 @@ should-not-trigger：
 - 创建或更新 skill 时优先使用 Codex 内置 `$skill-creator`。
 - 开发、执行、验收必须角色隔离：
   - `skill_developer` 只负责创建、修改、修复目标 skill。
-  - `clean_skill_executor` 只负责在干净初始条件下执行 eval prompt。
+  - `skill_executor` 只负责在干净初始条件下执行 eval prompt。
   - `skill_verifier` 只根据 contract、eval metadata、trace、logs、artifacts 和输出验收。
 
 禁止：
